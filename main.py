@@ -39,45 +39,43 @@ class User(UserMixin, db.Model):
   def get(self, id):
     return self.query.get(id)
 
-class Flight(db.Model):
+class Theatre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120))
-    from_ = db.Column(db.String(120))
-    to_   = db.Column(db.String(120))
-    date = db.Column(db.DateTime())
-    time = db.Column(db.String(120))
-    tickets = db.Column(db.Integer)
-    price = db.Column(db.Integer)
+    theatre_name = db.Column(db.String(120))
+    district = db.Column(db.String(120))
+    state = db.Column(db.String(120))
     
-    def __repr__(self) :
-        return f'Flight-{self.id} {self.from_}->{self.to_} on {self.date} at {self.time}'
+ 
     
     def _asdict(self):
         return {
             'id': self.id,
-            'name': self.name,
-            'from_': self.from_,
-            'to_': self.to_,
-            'date': str(self.date),
-            'time': self.time,
-            'price': self.price,
-            'tickets': self.tickets,
-            'date_' : self.date.strftime('%d-%b-%Y')
+            'theatre_name' : self.theatre_name,
+            'district' : self.district,
+            'state' : self.state
         }
 
-class Ticket(db.Model):
+class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    flight_id = db.Column(db.Integer, db.ForeignKey('flight.id'))
-    tickets = db.Column(db.Integer)
-    price = db.Column(db.Integer) 
+    theatre_id = db.Column(db.Integer, db.ForeignKey('theatre.id'))
+    theatre_name = db.Column(db.String(120))
+    movie_name = db.Column(db.String(120))
+    date = db.Column(db.DateTime())
+    time = db.Column(db.String(120))
+    price = db.Column(db.Integer)
+    ticket = db.Column(db.Integer,default=60)
     user = db.Column(db.Integer, db.ForeignKey('user.id')) 
     
     def _asdict(self):
         return {
             'id': self.id,
-            'flight_id': self.flight_id,
-            'tickets': self.tickets,
-            'price' : self.price,
+            'theatre_id': self.theatre_id,
+            'theatre_name': self.theatre_name,
+            'movie_name' : self.movie_name,
+            'date': self.date.strftime('%d-%b-%Y'),
+            'time': self.time,
+            'price': self.price,
+            'ticket': self.ticket,
             'user' : self.user
         }
 # db.create_all()
@@ -96,50 +94,50 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember Me',          default = False)
     submit = SubmitField('Login')
 
-class BOOK_FLIGHT(Resource):
+class BOOK_TICKET(Resource):
     
     def get(self):
         id = current_user.id
-        tickets = Ticket.query.filter_by(user = id).all()
+        tickets = Theatre.query.filter_by(user = id).all()
         
         for idx in range(len(tickets)):
             tickets[idx] = tickets[idx]._asdict()
-            flight_details = Flight.query.filter_by(id = tickets[idx]['flight_id']).first()
-            if not flight_details:
+            theatre_details = Theatre.query.filter_by(id = tickets[idx]['Theatre_details']).first()
+            if not theatre_details:
                 continue
-            for detail in flight_details._asdict().keys():
+            for detail in theatre_details._asdict().keys():
                 if detail == 'tickets':continue
                 if detail == 'date':continue
                 if detail == 'price':continue
-                #     tickets[idx][detail] = str(flight_details._asdict()[detail].date()).split(' ')[0]
+                #     tickets[idx][detail] = str(ticket_details._asdict()[detail].date()).split(' ')[0]
                 # else:
-                tickets[idx][detail] = flight_details._asdict()[detail]
+                tickets[idx][detail] = theatre_details._asdict()[detail]
         print(tickets)
         return jsonify(tickets)
         
     
     def put(self):
         args = request.get_json()
-        ticket = Ticket(flight_id = args['id'], tickets = args['ticket'], price = args['price'], user = current_user.id)
-        flight = Flight.query.get(args['id'])
-        flight.tickets -= args['ticket']
+        ticket = Movie(theatre_id = args['id'], tickets = args['ticket'], price = args['price'], user = current_user.id)
+        theatre = Theatre.query.get(args['id'])
+        theatre.tickets -= args['ticket']
         db.session.add(ticket)
         db.session.commit()
         
         return jsonify({'message': 'Ticket Booked'})
     
-class REMOVE_FLIGHT_API(Resource):
-    def post(self):
+class ADD_THEATRE_API(Resource):
+    def put(self):
         data = request.get_json()
-        flight = Flight.query.get(data['id'])
-        print('\n' * 10)
-        print(flight)
-        print('\n' * 10)
-        db.session.delete(flight)
+        theatre = Theatre(theatre_name = data['theatre_name'], district = data['theatre_district'], state = data['theatre_state'])
+
+        db.session.add(theatre)
         db.session.commit()
-        return {'message': 'Flight added successfully'}, 201   
+        print("Successfully")
+
+        return {'message': 'Theatre added successfully'}, 201   
     
-class SEARCH_FLIGHT(Resource):
+class SEARCH_MOVIE(Resource):
     def get(self):
         args = request.args
         if args['date'] != '':
@@ -147,54 +145,52 @@ class SEARCH_FLIGHT(Resource):
         else:
             date = ''
         
-        flights = Flight.query.all()
-        print(flights)
-        if args['from'] != ' ':
-            flights = list(map(lambda x: x, filter(lambda x: x.from_.lower() == args['from'].lower(), flights)))
-        if args['to'] != ' ':
-            flights = list(map(lambda x: x, filter(lambda x: x.to_.lower() == args['to'].lower(), flights)))
+        theatre = Theatre.query.all()
+        print(theatre)
+        if args['theatre_name'] != ' ':
+            theatre = list(map(lambda x: x, filter(lambda x: x.from_.lower() == args['theatre_name'].lower(), theatre)))
+        if args['movie_name'] != ' ':
+            theatre = list(map(lambda x: x, filter(lambda x: x.to_.lower() == args['movie_name'].lower(), theatre)))
         if date != '':
-            flights = list(map(lambda x: x, filter(lambda x: x.date == date, flights)))
-        print(flights)
-        for idx in range(len(flights)):
-            flights[idx] = flights[idx]._asdict()
-        return jsonify(flights)
+            theatre = list(map(lambda x: x, filter(lambda x: x.date == date, theatre)))
+        print(theatre)
+        for idx in range(len(theatre)):
+            theatre[idx] = theatre[idx]._asdict()
+        return jsonify(theatre)
         
-class CREATE_FLIGHT(Resource):
+class ADD_MOVIE_API(Resource):
     
     def put(self):
-        args = request.get_json()
-        date = parser.parse(args['date']).date()
-        print(args)
-        flight = Flight(name = args['name'], from_ = args['from'], to_ = args['to'], date = date, time = args['time'], price = args['price'], tickets = 60)
-        print(flight)
-        db.session.add(flight)
+        data = request.get_json()
+        date = parser.parse(data['date']).date()
+        movie = Movie(theatre_name = data['theatre_name'], movie_name = data['movie_name'], date = date, time = data['time'], price = data['price'], ticket = 60 )
+        db.session.add(movie)
         db.session.commit()
-        print('commited successfully')
-        return {"status": "success", "object": flight._asdict()}
+        print("success")
+        return {"status": "success", "object": movie._asdict()}
 
-class VIEW_FLIGHT(Resource):
+class VIEW_TICKET(Resource):
     
     def get(self):
         args = request.args
         
         print('here', args)
-        tickets = Ticket.query.filter_by(flight_id = args['id']).all()
+        tickets = Movie.query.filter_by(flight_id = args['id']).all()
         for idx in range(len(tickets)):
             tickets[idx] = tickets[idx]._asdict()
-            flight_details = Flight.query.filter_by(id = tickets[idx]['flight_id']).first()
+            theatre_details = Theatre.query.filter_by(id = tickets[idx]['Theatre_id']).first()
             print('\n' * 10)
-            print(flight_details)
+            print(theatre_details)
             print('\n' * 10)
-            if not flight_details:
+            if not theatre_details:
                 continue
-            for detail in flight_details._asdict().keys():
+            for detail in theatre_details._asdict().keys():
                 if detail == 'tickets':continue
-                if detail == 'date':continue
+                if detail == 'date':continue    
                 if detail == 'price':continue
-                #     tickets[idx][detail] = str(flight_details._asdict()[detail].date()).split(' ')[0]
+                #     tickets[idx][detail] = str(theatre_details._asdict()[detail].date()).split(' ')[0]
                 # else:
-                tickets[idx][detail] = flight_details._asdict()[detail]
+                tickets[idx][detail] = theatre_details._asdict()[detail]
             tickets[idx]['booking_name'] = User.query.filter_by(id = tickets[idx]['user']).first().name
         print(tickets)
         return jsonify(tickets)
@@ -255,10 +251,10 @@ def login():
         flash('Invalid email address or Password.')    
     return render_template('login.html', form=form)
 
-@app.route('/add_flight')
-def add_flight():
+@app.route('/add_movie')
+def add_movie():
     if current_user.email == "admin@admin.com":
-        return render_template('add_flight.html')
+        return render_template('add_movie.html')
     return redirect(url_for('index'))
 
 @app.route('/logout')
@@ -267,10 +263,10 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/remove_flight')
-def remove_flight():
+@app.route('/add_theatre')
+def add_theatre():
     if current_user.email == "admin@admin.com":
-        return render_template('remove_flight.html')
+        return render_template('add_theatre.html')
     return redirect(url_for('index'))
 
 @app.route('/view')
@@ -279,11 +275,12 @@ def view():
         return render_template('view.html')
     return redirect(url_for('index'))
 
-api.add_resource(CREATE_FLIGHT, '/create_flight')
-api.add_resource(SEARCH_FLIGHT, '/search')
-api.add_resource(REMOVE_FLIGHT_API, '/remove')
-api.add_resource(BOOK_FLIGHT, '/book')
-api.add_resource(VIEW_FLIGHT, '/flights')
+
+api.add_resource(ADD_THEATRE_API,'/add_theatre')
+api.add_resource(ADD_MOVIE_API, '/add_movie')
+api.add_resource(SEARCH_MOVIE, '/search')
+api.add_resource(BOOK_TICKET, '/book')
+api.add_resource(VIEW_TICKET, '/tickets')
 
 if __name__ == '__main__':
     app.run(debug = False, host = '0.0.0.0')

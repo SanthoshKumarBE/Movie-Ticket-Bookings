@@ -12,7 +12,7 @@
         flex-basis: 30%;
     }
     .modal {
-    display: none; /* Hidden by default */
+    /*display: none; *//* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
     padding-top: 100px; /* Location of the box */
@@ -61,13 +61,14 @@
 </style>
     <h1>View Bookings</h1>
     
-    <div class="flight">
-        <label for="from">From:</label>
-        <input type="text" id="from" name="from">
-        <label for="to">To:</label>
+    <div class="movie">
+        <label for="theatre">Theatre Name:</label>
+        <input type="text" id="theatre" name="theatre">
+        <label for="to">Movie Name:</label>
         <input type="text" id="to" name="to">
         <label for="date">Date:</label>
         <input type="date" id="date" name="date">
+        <br><br>
         <button onclick = "search(`view`);">Search</button>
     </div>
     <br><br><br><br>

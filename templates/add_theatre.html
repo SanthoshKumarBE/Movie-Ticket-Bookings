@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    #results {
+        display: flex;
+        flex-direction: row;
+        gap : 10px;
+        flex-wrap: wrap;
+    }
+    #results > div {
+        flex-basis: 30%;
+    }
+    h1{
+        /* center */
+        text-align: center;
+    }
+</style>
+<form>
+    <h1>Add Theatre</h1>
+    <!-- create input to get from, to, date and time -->
+    <div>
+        <label for="theatre_name">Theatre Name</label>
+        <input type="text" class="form-control" name="name" id="theatre_name" placeholder="Theatre Name">
+        <br>
+        <label for = "district">District:</label>
+        <input type="text" class="form-control" name="district" id = "theatre_district" placeholder="District Name">
+        <br>
+        <label for = "state" >State:</label>
+        <input type="text" class="form-control" name="state" id = "theatre_state" placeholder="State">
+    </div>
+    <br>
+    
+    <br>
+    <button type="submit" class="btn btn-primary" onclick = "add_theatre();return false;">Submit</button>
+
+    
+
+</form>
+<br><br><br><br>
+<div id="results">
+    
+</div>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}

@@ -54,7 +54,7 @@
         text-align: center;
     }
 </style>
-    <h1>Book Tickets</h1>
+    <h1>Movie Booking </h1>
     <div id="myModal" class="modal">
 
         <div class="modal-content">
@@ -68,14 +68,15 @@
         </div>
     
     </div>
-    <div class="flight">
-        <label for="from">From:</label>
-        <input type="text" id="from" name="from">
-        <label for="to">To:</label>
-        <input type="text" id="to" name="to">
+    <div class="movie">
+        <label for="theatre">Theatre Name:</label>
+        <input type="text" id="theatre" name="theatre">
+        <label for="movie_name">Movie Name:</label>
+        <input type="text" id="movie_name" name="movie_name">
         <label for="date">Date:</label>
         <input type="date" id="date" name="date">
-        <button onclick = "search(`search`);">Search</button>
+        <br><br>
+        <button class = "btn" onclick = "search(`search`);">Search</button>
     </div>
     <br><br><br><br>
     <div id="results">
