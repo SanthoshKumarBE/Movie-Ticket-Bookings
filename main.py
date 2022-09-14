@@ -14,7 +14,7 @@ from wtforms import StringField,PasswordField,SubmitField,BooleanField
 from wtforms.validators import DataRequired,Email,EqualTo
 
 app                                     = Flask(__name__)
-app.secret_key                          = "Prakash Presidio Project"
+app.secret_key                          = "Santhosh Presidio Project"
 app.config['TEMPLATES_AUTO_RELOAD']     = True
 
 api                                     = Api(app)
